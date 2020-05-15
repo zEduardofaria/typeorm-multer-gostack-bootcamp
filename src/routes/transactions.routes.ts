@@ -1,18 +1,49 @@
 import { Router } from 'express';
+import { getCustomRepository } from 'typeorm';
 
-// import TransactionsRepository from '../repositories/TransactionsRepository';
-// import CreateTransactionService from '../services/CreateTransactionService';
+import TransactionsRepository from '../repositories/TransactionsRepository';
+import CategoriesRepository from '../repositories/CategoriesRepository';
+
+import CreateCategoryService from '../services/CreateCategoryService';
+import CreateTransactionService from '../services/CreateTransactionService';
 // import DeleteTransactionService from '../services/DeleteTransactionService';
 // import ImportTransactionsService from '../services/ImportTransactionsService';
 
 const transactionsRouter = Router();
 
 transactionsRouter.get('/', async (request, response) => {
-  // TODO
+  const transactionsRepository = getCustomRepository(TransactionsRepository);
+
+  const transactions = await transactionsRepository.find();
+
+  return response.json(transactions);
 });
 
 transactionsRouter.post('/', async (request, response) => {
-  // TODO
+  const { title, value, type, category } = request.body;
+
+  const categoriesRepository = getCustomRepository(CategoriesRepository);
+
+  const hasCategory = await categoriesRepository.findByTitle(category);
+
+  if (!hasCategory) {
+    const createCategory = new CreateCategoryService();
+
+    await createCategory.execute({
+      title: category,
+    });
+  }
+
+  const createTransaction = new CreateTransactionService();
+
+  const appointment = await createTransaction.execute({
+    title,
+    value,
+    type,
+    category,
+  });
+
+  return response.json(appointment);
 });
 
 transactionsRouter.delete('/:id', async (request, response) => {

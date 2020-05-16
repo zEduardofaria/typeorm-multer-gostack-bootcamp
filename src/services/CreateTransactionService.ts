@@ -1,5 +1,5 @@
 import { getCustomRepository } from 'typeorm';
-// import AppError from '../errors/AppError';
+import AppError from '../errors/AppError';
 
 import Transaction from '../models/Transaction';
 import TransactionsRepository from '../repositories/TransactionsRepository';
@@ -19,6 +19,12 @@ class CreateTransactionService {
     category,
   }: Request): Promise<Transaction> {
     const transactionsRepository = getCustomRepository(TransactionsRepository);
+
+    const balance = await transactionsRepository.getBalance();
+
+    if (balance.total < value && type === 'outcome') {
+      throw new AppError('Invalid number');
+    }
 
     const transaction = transactionsRepository.create({
       title,

@@ -13,13 +13,15 @@ class TransactionsRepository extends Repository<Transaction> {
   public async getBalance(): Promise<Balance> {
     const balance = { total: 0, income: 0, outcome: 0 };
 
-    // this.transactions.forEach(transaction => {
-    //   if (transaction.type === 'income') {
-    //     balance.income += transaction.value;
-    //   } else {
-    //     balance.outcome += transaction.value;
-    //   }
-    // });
+    const transactions = await this.find();
+
+    transactions.forEach(transaction => {
+      if (transaction.type === 'income') {
+        balance.income += transaction.value;
+      } else {
+        balance.outcome += transaction.value;
+      }
+    });
 
     balance.total = balance.income - balance.outcome;
 
